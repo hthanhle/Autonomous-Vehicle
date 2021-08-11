@@ -1,6 +1,6 @@
 # Autonomous vehicles
 ## Descriptions
-This project develops a semantic segmentation method for self-driving cars. In our method, image pixels are classified into i) road, ii) markers, and iii) background categories.
+This project develops a semantic segmentation method for self-driving cars. In our method, image pixels are classified into i) road, ii) marker, and iii) background categories.
 
 1. We use the Pytorch segmentation library: https://github.com/qubvel/segmentation_models.pytorch. 
 2. The segmentation model is PSPNet [[1]](https://ieeexplore.ieee.org/document/8100143) with encoder ResNet34 [[2]](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/He_Deep_Residual_Learning_CVPR_2016_paper.pdf).
