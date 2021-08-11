@@ -1,4 +1,4 @@
-# Autonomous vehicles
+# Road Segmentation for Autonomous Vehicles
 ## Descriptions
 This project develops a semantic segmentation method for self-driving cars. In our method, image pixels are classified into i) road, ii) marker, and iii) background categories.
 
