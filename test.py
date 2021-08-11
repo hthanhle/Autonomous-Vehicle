@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 from PIL import Image
-from utils.visualize import visualize
+from utils.utils import visualize
 import cv2
 import torch
 import torchvision.transforms as T
@@ -34,16 +34,16 @@ if __name__ == '__main__':
     print('Loading the trained model done')
 
     # Open an input image
-    input_img = Image.open(args.image)
-    height = input_img.size[1]
-    width = input_img.size[0]
+    img = Image.open(args.image)
+    height = img.size[1]
+    width = img.size[0]
 
     # Apply transforms and convert the image to a Pytorch tensor
-    img = transforms.Resize((320, 320), interpolation=Image.NEAREST)(input_img)
-    img = T.ToTensor()(img).unsqueeze(dim=0).to(device)
+    _img = transforms.Resize((640, 640), interpolation=Image.NEAREST)(img)
+    _img = T.ToTensor()(_img).unsqueeze(dim=0).to(device)
 
     # Perform a forward pass
-    logits = model(img)
+    logits = model(_img)
 
     # Resize the logits back to the original resolution for a better visualization
     logits = torch.nn.Upsample(size=(height, width),
@@ -56,11 +56,7 @@ if __name__ == '__main__':
     seg_map = np.argmax(logits, axis=0)
 
     # Visualize the segmentation map
-    overlaid_img = visualize(seg_map, np.asarray(input_img))
-
-    # nCombine the input image with the overlaid image
-    combined_img = np.concatenate((np.asarray(input_img), overlaid_img),
-                                  axis=1)
+    overlaid_img = visualize(seg_map, np.asarray(img))
 
     # Save the visual result
-    cv2.imwrite(args.image.replace('.', '_out.'), combined_img)
+    cv2.imwrite(args.image.replace('.', '_out.'), cv2.cvtColor(overlaid_img, cv2.COLOR_RGB2BGR))

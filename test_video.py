@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 from PIL import Image
 import cv2
-from utils.visualize import visualize
+from utils.utils import visualize
 import torch
 import torchvision.transforms as T
 from torchvision import transforms
@@ -35,26 +35,27 @@ if __name__ == '__main__':
 
     # Process the input video
     in_video = cv2.VideoCapture(args.video)
+    width = int(in_video.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(in_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-    seg_video = cv2.VideoWriter(args.video.replace('.mov', '_out.mp4'), fourcc, 24, (2 * 320, 320))
+    seg_video = cv2.VideoWriter(args.video.replace('.', '_out.'), fourcc, 24, (width, height))
 
     while True:
         # Read a frame from the video
         result, frame = in_video.read()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
         if not result:
             break
 
         # Convert the frame to a PIL image
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = Image.fromarray(frame)
 
         # Apply transforms and convert the image to a Pytorch tensor
-        frame = transforms.Resize((320, 320), interpolation=Image.NEAREST)(frame)
-        frame_tensor = T.ToTensor()(frame).unsqueeze(dim=0).to(device)
+        _frame = transforms.Resize((640, 640), interpolation=Image.NEAREST)(frame)
+        _frame = T.ToTensor()(_frame).unsqueeze(dim=0).to(device)
 
         # Perform a forward pass
-        logits = model(frame_tensor)
+        logits = model(_frame)
 
         # Resize the logits back to the original resolution for a better visualization
         logits = torch.nn.Upsample(size=(height, width),
@@ -69,11 +70,8 @@ if __name__ == '__main__':
         # Visualize the segmentation map
         overlaid_img = visualize(seg_map, np.asarray(frame))
 
-        # Combine the input image with the overlaid image
-        combined_img = np.concatenate((np.asarray(frame), overlaid_img), axis=1)
-
         # Save the output frame
-        seg_video.write(combined_img)
+        seg_video.write(cv2.cvtColor(overlaid_img, cv2.COLOR_RGB2BGR))
 
         # Early break if ESC is pressed
         if cv2.waitKey(1) & 0xff == 27:
